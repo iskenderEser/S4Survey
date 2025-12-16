@@ -127,13 +127,11 @@
     </header>
 
     <div class="grid">
-
       <section class="card">
         <div class="cardHead">
           <h2 class="cardTitle">Gözlem İfadeleri</h2>
           <div class="pill" id="totalChecked">İşaretli: 0</div>
         </div>
-
         <div class="cardBody">
           <div class="accordion" id="groupsRoot"></div>
         </div>
@@ -172,7 +170,6 @@
           </div>
         </div>
       </aside>
-
     </div>
   </div>
 
@@ -289,10 +286,10 @@
 
     function buildUI(){
       groupsRoot.innerHTML = "";
+
       DATA.forEach((g, gi) => {
         const details = document.createElement("details");
         details.className = "group";
-        // İlk grup açık gelsin istersen:
         if (gi === 0) details.open = true;
 
         details.innerHTML = `
@@ -302,6 +299,14 @@
           </summary>
           <div class="items" id="items-${g.key}"></div>
         `;
+
+        // ✅ Tek açık akordiyon (diğerleri kapanır, işaretler kalır)
+        details.addEventListener("toggle", () => {
+          if (!details.open) return;
+          qsa("details.group", groupsRoot).forEach(d => {
+            if (d !== details) d.open = false;
+          });
+        });
 
         const itemsEl = details.querySelector(`#items-${g.key}`);
         g.items.forEach((txt, idx) => {
@@ -318,6 +323,7 @@
         groupsRoot.appendChild(details);
       });
 
+      // Limit + sayım
       groupsRoot.addEventListener("change", (e) => {
         const target = e.target;
         if (!(target instanceof HTMLInputElement) || target.type !== "checkbox") return;
@@ -326,6 +332,7 @@
           const g = target.dataset.group;
           const axis = (g === "T" || g === "A") ? "TA" : "CE";
           const total = axisTotal(axis);
+
           if (total > AXIS_CAP) {
             target.checked = false;
             showLimit(axis === "TA"
